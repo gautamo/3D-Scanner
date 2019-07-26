@@ -22,13 +22,13 @@ Structured Light Scanning is the process of projecting a set of patterns onto an
 This project uses 8 sets of images. All images have the resolution 1200x1920 pixels. The first set includes 20 image pairs used to calibrate the cameras. The image pairs display a checkerboard pattern taken at varying angles where each image pair represents a left and right angle of the camera (see figure 1). The next 7 sets of images include 40 image pairs of the object taken from a left and right angle in which each image pair is projected with a different barcode pattern of structured light to be used for reconstructing the image points in 3D space (see figure 2). Each of these 7 sets show different angles of the object (ie. top view, side view, etc.) and include 2 additional image pairs of left and right angles with one image pair including the object and the other image pair discarding the object. This is used to mask the background from the object as well as provide color data of the object for the final model rendering. 
 
 <p align="center">
-  <img src="images/figure1.png">
-  <b>Figure 1: Pair of Checkerboard Calibration Images from Left and Right Angles</b>
+  <img src="images/figure1.png"><br>
+  <b>Figure 1: Pair of Checkerboard Calibration Images from Left and Right Angles</b><br>
 </p>
 
 <p align="center">
-  <img src="images/figure2.png">
-  <b>Figure 2: Two Pairs of Structured Light Object Scans from Left and Right Angles</b>
+  <img src="images/figure2.png"><br>
+  <b>Figure 2: Two Pairs of Structured Light Object Scans from Left and Right Angles</b><br>
 </p>
 
 ## Algorithms 
@@ -44,8 +44,8 @@ There will be two cameras called camL and camR from which photos from the left a
 The intrinsic parameters of the camera are found using cv2.calibrateCamera(). Before this function is called, each image of the chessboard is fed into cv2.findChessboardCorners() which return a list of 2d chessboard corner coordinates in the image plane (see figure 3 for example). These corner coordinates are mapped to a grid of points representing 3d points in real world space. The 2d and 3d points are compiled into separate lists which cv2.calibrateCamera uses to determine the intrinsic parameters of both cameras. 
 
 <p align="center">
-  <img src="images/figure3.png">
-  <b>Figure 3: Corners found by cv2.findChessboardCorners() visualized</b>
+  <img src="images/figure3.png"><br>
+  <b>Figure 3: Corners found by cv2.findChessboardCorners() visualized</b><br>
 </p>
 
 **Extrinsic Camera parameters: calibratePose()**
