@@ -1,5 +1,3 @@
-<center>this is centered</center>
-
 # 3D Scanner
 This is a 3D Scanner written in Python that uses images of an object to triangulate a point cloud, form a mesh, and construct a model. 
 
@@ -23,7 +21,10 @@ Structured Light Scanning is the process of projecting a set of patterns onto an
 
 This project uses 8 sets of images. All images have the resolution 1200x1920 pixels. The first set includes 20 image pairs used to calibrate the cameras. The image pairs display a checkerboard pattern taken at varying angles where each image pair represents a left and right angle of the camera (see figure 1). The next 7 sets of images include 40 image pairs of the object taken from a left and right angle in which each image pair is projected with a different barcode pattern of structured light to be used for reconstructing the image points in 3D space (see figure 2). Each of these 7 sets show different angles of the object (ie. top view, side view, etc.) and include 2 additional image pairs of left and right angles with one image pair including the object and the other image pair discarding the object. This is used to mask the background from the object as well as provide color data of the object for the final model rendering. 
 
-![Figure 1: Pair of Checkerboard Calibration Images from Left and Right Angles]()
+![Figure 1: Pair of Checkerboard Calibration Images from Left and Right Angles](figure1.png)
+\begin{center}
+**Figure 1: Pair of Checkerboard Calibration Images from Left and Right Angles**
+\end{center} 
 
 ![Figure 2: Two Pairs of Structured Light Object Scans from Left and Right Angles]()
 
