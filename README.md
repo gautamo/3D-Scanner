@@ -24,6 +24,7 @@ This project uses 8 sets of images. All images have the resolution 1200x1920 pix
 ![Figure 1: Pair of Checkerboard Calibration Images from Left and Right Angles](images/figure1.png)
 
 <p align="center">
+  <img src="images/figure1.png">
   <b>Figure 1: Pair of Checkerboard Calibration Images from Left and Right Angles</b>
 </p>
 
