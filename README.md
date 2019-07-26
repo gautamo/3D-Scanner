@@ -1,4 +1,4 @@
-# 3D-Scanner
+# 3D Scanner
 This is a 3D Scanner written in Python that uses images of an object to triangulate a point cloud, form a mesh, and construct a model. 
 
 The code uses images modified with structured light scanning as input. In this case objects must be projected with vertical and horizonal bars of light of varying degrees and images must be taken from the left and right angles consistently to achieve the image format necessary for this process. The code will produce several meshes that can be organized in MeshLab to produce the final model. MeshLab allows you to modify the meshes to clean up the final model. 
@@ -37,4 +37,28 @@ There will be two cameras called camL and camR from which photos from the left a
 
 The intrinsic parameters of the camera are found using cv2.calibrateCamera(). Before this function is called, each image of the chessboard is fed into cv2.findChessboardCorners() which return a list of 2d chessboard corner coordinates in the image plane (see figure 3 for example). These corner coordinates are mapped to a grid of points representing 3d points in real world space. The 2d and 3d points are compiled into separate lists which cv2.calibrateCamera uses to determine the intrinsic parameters of both cameras. 
 
+![Figure 3: Corners found by cv2.findChessboardCorners() visualized]()
+
+###### Extrinsic Camera parameters: calibratePose()
+The extrinsic parameters of the camera are found using calibratePose(pts3,pts2,cam,params_init). This function takes a grid of 3d points representing the chessboard corners as pts3, a list of chessboard corners found using cv2.findChessboardCorners()  as pts2, the camera updated with the intrinsic parameters, and an array of the initial estimate of extrinsic parameters. calibratePose() calls a multitude of functions with separate jobs. residuals(pts3,pts2,cam,t) computes the difference between the projection of 3D points by the camera
+with the given parameters and the observed 2D locations. To do this, after updating the extrinsic parameters with t, cam.project(pts3) is called which projects the given 3d points in world coordinates into the camera to produce a set of 2d coordinates as if the camera took a photo of the scene. This is done with the following code:
+
+```python
+  #project() function
+  #self.R=rotation, self.t=translation, self.f=focal length, self.c=offset of principal point
+  #get point location relative to camera
+ 	pcam = self.R.transpose() @ (pts3 - self.t)
+  #project
+  p = self.f * (pcam / pcam[2:])
+  #offset principal point
+  pts2 = p[0:2,:] + self.c
+	return pts2
+```
+By changing the value of t in residuals() with a lambda function we can compute a residual function. To get the optimal extrinsic parameters we will find the least squares solution between our residual function and our estimated extrinsic parameters using scipy.optimize.leastsq(func_residual, params_init). This provides updated extrinsic parameters of the camera so that pts3 projects as close as possible to pts2. Whenever the extrinsic parameters are updated the camera translation is set and the camera rotation is updated using make_rotation(). make_rotation() sets up 3 rotation matrices representing the degrees to rotate the x, y, and z axis respectively. The dot product of these matrices results in the final rotation matrix. We can confirm we have the right intrinsic and extrinsic parameters by projecting pts3 with cam.project() and mapping its 2d points onto the chessboard.
+
+**Create Masks: decode()**
+
+The purpose of decode(path,start,threshold,cthreshold=0.6,frame="",color="") is to create masks that can be applied on the input image to remove unnecessary detail such as the background since we only want to make a model of the object. decode() will use the images with projected light patterns to create a box mask. Images are converted to grayscale and read in pairs where the projected light pattern is swapped (see figure 4). Each pair of images will gradually increase the number of lines projected onto the object. Each pixel coordinate in the first image that is brighter than its corresponding pixel in the second image will append a 1 (or if not brighter a 0) to its coordinate in a 2d array of the same size. This will create a box code image in binary coded decimal that will be converted to decimal values (0-1023) for each pixel with the function graytobcd(). The box code image is what we will apply our masks to. We will create a box mask and a color mask. To create the box mask we will take the absolute value of the difference between the first and second image in a pair and see if each pixel value is above a certain threshold. Pixels that do not satisfy difference threshold are placed on the box mask which starts out as a an empty 2d array of the same image size. This threshold determines how much of the image will be masked out. The box code and box mask will be modified with each pair of images to create the final 2d arrays. The color mask is made by thresholding the difference of a color image of the object with a color image of the background to determine what pixel values have not changed dramatically which will constitute the background and thus be masked out. Because each pixel has the three values blue, green, and red we take the square root of the difference of the images and sum each pixel’s colors to get a single pixel value in order to use the threshold comparison to make the color mask. See figure 5 for the box code, box mask, and color mask.
+
+![Figure 4: Images are read in pairs to determine what pixels will be masked out]()
 
