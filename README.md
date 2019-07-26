@@ -21,16 +21,13 @@ Structured Light Scanning is the process of projecting a set of patterns onto an
 
 This project uses 8 sets of images. All images have the resolution 1200x1920 pixels. The first set includes 20 image pairs used to calibrate the cameras. The image pairs display a checkerboard pattern taken at varying angles where each image pair represents a left and right angle of the camera (see figure 1). The next 7 sets of images include 40 image pairs of the object taken from a left and right angle in which each image pair is projected with a different barcode pattern of structured light to be used for reconstructing the image points in 3D space (see figure 2). Each of these 7 sets show different angles of the object (ie. top view, side view, etc.) and include 2 additional image pairs of left and right angles with one image pair including the object and the other image pair discarding the object. This is used to mask the background from the object as well as provide color data of the object for the final model rendering. 
 
-![Figure 1: Pair of Checkerboard Calibration Images from Left and Right Angles](images/figure1.png)
-
 <p align="center">
   <img src="images/figure1.png">
   <b>Figure 1: Pair of Checkerboard Calibration Images from Left and Right Angles</b>
 </p>
 
-![Figure 2: Two Pairs of Structured Light Object Scans from Left and Right Angles](images/figure2.png)
-
 <p align="center">
+  <img src="images/figure2.png">
   <b>Figure 2: Two Pairs of Structured Light Object Scans from Left and Right Angles</b>
 </p>
 
@@ -46,9 +43,8 @@ There will be two cameras called camL and camR from which photos from the left a
 
 The intrinsic parameters of the camera are found using cv2.calibrateCamera(). Before this function is called, each image of the chessboard is fed into cv2.findChessboardCorners() which return a list of 2d chessboard corner coordinates in the image plane (see figure 3 for example). These corner coordinates are mapped to a grid of points representing 3d points in real world space. The 2d and 3d points are compiled into separate lists which cv2.calibrateCamera uses to determine the intrinsic parameters of both cameras. 
 
-![Figure 3: Corners found by cv2.findChessboardCorners() visualized](images/figure3.png)
-
 <p align="center">
+  <img src="images/figure3.png">
   <b>Figure 3: Corners found by cv2.findChessboardCorners() visualized</b>
 </p>
 
@@ -75,16 +71,13 @@ By changing the value of t in residuals() with a lambda function we can compute 
 
 The purpose of decode(path,start,threshold,cthreshold=0.6,frame="",color="") is to create masks that can be applied on the input image to remove unnecessary detail such as the background since we only want to make a model of the object. decode() will use the images with projected light patterns to create a box mask. Images are converted to grayscale and read in pairs where the projected light pattern is swapped (see figure 4). Each pair of images will gradually increase the number of lines projected onto the object. Each pixel coordinate in the first image that is brighter than its corresponding pixel in the second image will append a 1 (or if not brighter a 0) to its coordinate in a 2d array of the same size. This will create a box code image in binary coded decimal that will be converted to decimal values (0-1023) for each pixel with the function graytobcd(). The box code image is what we will apply our masks to. We will create a box mask and a color mask. To create the box mask we will take the absolute value of the difference between the first and second image in a pair and see if each pixel value is above a certain threshold. Pixels that do not satisfy difference threshold are placed on the box mask which starts out as a an empty 2d array of the same image size. This threshold determines how much of the image will be masked out. The box code and box mask will be modified with each pair of images to create the final 2d arrays. The color mask is made by thresholding the difference of a color image of the object with a color image of the background to determine what pixel values have not changed dramatically which will constitute the background and thus be masked out. Because each pixel has the three values blue, green, and red we take the square root of the difference of the images and sum each pixel’s colors to get a single pixel value in order to use the threshold comparison to make the color mask. See figure 5 for the box code, box mask, and color mask.
 
-![Figure 4: Images are read in pairs to determine what pixels will be masked out](images/figure4.png)
-
 <p align="center">
+  <img src="images/figure4.png">
   <b>Figure 4: Images are read in pairs to determine what pixels will be masked out</b>
 </p>
 
-![Figure 5: White pixels in the box/color masks will mask corresponding pixels in the box code. 
-The box code with masks applied is the bottom right image (notice only points of the teapot are seen).](images/figure5.png)
-
 <p align="center">
+  <img src="images/figure5.png">
   <b>Figure 5: White pixels in the box/color masks will mask corresponding pixels in the box code. 
 The box code with masks applied is the bottom right image (notice only points of the teapot are seen).</b>
 </p>
@@ -93,9 +86,8 @@ The box code with masks applied is the bottom right image (notice only points of
 
 triangulate(pts2L,camL,pts2R,camR) takes the set of points seen from the left (pts2L) and right (pts2R) masked images from their corresponding cameras (camL and camR) and returns the 3D coordinates of the points in the images relative to the global coordinate system. We are finding points from both images that match (see figure 6). First we need to get the z values of each pixel in pts2L/pts2R relative to each camera. To do this we will use the formula in figure 6 where qL/qR are 3x1 matrices in the format [focal_length*Point_x, focal_length*Point_y, focal_length]. t is the translation difference between camR.t and camL.t. We can use the linear least squares algorithm from np.linalg.lstsq() to find the values of z from the left and right cameras that correlate to a point match in 3D space as seen from each camera of known orientation in the global coordinate system.  To match these two points to with respect to the global coordinate system we will multiply each point with its respective camera rotation matrix and add its respective camera translation matrix. The values of the two points should be the same so we will take the average of the two points to take into account slight variations to get the point in 3D space. This is done for each pair of points from each camera and the 3D points are compiled into a 3xN array.
 
-![Figure 6: To find a matching point p we must find point p’s z value relative to each camera as shown in the formula with respect to the diagram.](images/figure6.png)
-
 <p align="center">
+  <img src="images/figure6.png">
   <b>Figure 6: To find a matching point p we must find point p’s z value relative to each camera as shown in the formula with respect to the diagram.</b>
 </p>
 
@@ -103,9 +95,8 @@ triangulate(pts2L,camL,pts2R,camR) takes the set of points seen from the left (p
 
 reconstruct(imprefix,threshold,cthreshold,camL,camR) completed the pipeline of matching and triangulating points seen from two cameras to produce a point cloud as seen in figure 7. To do this the masks for each image set is retrieved from decode(). There is a set of photos with horizontal bars of structured light and vertical bars of structured light for the left and right cameras respectively. This produces 8 masks (4 color masks and 4 box masks) which are applied to their respective left and right images. With these masks applied we can use np.intersect1d to find the indices of pixels in the left and right code image that have matching pixel values. These indices are fed into a grid of points which will become pts2L and pts2R that is taken by triangulate() to produce the array of coordinates for the 3D points pts3. reconstruct() also takes the color values for the left and right images that become matched with the points in pts3 to be used for applying color to our model in the alignment phase where all the models from different scans are combined. 
 
-![Figure 7: Triangulated point cloud of teapot created from reconstruct()](images/figure7.png)
-
 <p align="center">
+  <img src="images/figure7.png">
   <b>Figure 7: Triangulated point cloud of teapot created from reconstruct()</b>
 </p>
 
@@ -113,9 +104,8 @@ reconstruct(imprefix,threshold,cthreshold,camL,camR) completed the pipeline of m
 
 make_mesh(path,threshold,cthreshold,boxlimits,store,camL,camR) creates a mesh using the point cloud pts3 from reconstruct(). Once the points are retrieved we apply two procedures called bounding box pruning and triangle pruning to remove extraneous points that are not part of the object. Bounding box pruning sets limits on what points are allowed within a certain volume of space. We specify boxlimits=[xmin, xmax, ymin, ymax, zmin, zmax]. Any point in pts3 not in the ranges specified in boxlimits is removed from pts3. The corresponding point is also removed from pts2L/pts2R and from the color array used for applying color to the final object mesh. Then we use the Delaunay() function from scipy.spatial to triangulate the 2D points to get the surface mesh saved as tri. This is a triangle mesh. Tri.simplices returns an array of points that constitute the corners of each triangle made. To perform triangle pruning we measure the edges of each triangle by calculating the distance between the corners of each triangle in 3D space. Any triangle with an edge larger than the specified threshold has its points removed from pts3, pts2L/pts2R, and the color array. Mesh smoothing involves averaging a set of local points to produce a smoother mesh. We will save this data (pts3,color,tri.simplices) as a .ply file with writeply() (written by Charles Folkes) to be used in meshlab to create align different meshes together. Because the color matrix must have values between 0 and 1, we will divide the color matrix by 255 before calling writeply(). An example of a created mesh can be seen in figure 8.
 
-![Figure 8: Teapot Bottom and Side Mesh created using make_mesh()](images/figure8.png)
-
 <p align="center">
+  <img src="images/figure8.png">
   <b>Figure 8: Teapot Bottom and Side Mesh created using make_mesh()</b>
 </p>
 
@@ -127,23 +117,20 @@ Once we have generated the meshes from the 7 sets of object photos and different
 
 The final results can be seen in the images below. There are several things to note about these results. These results do not implement color mapping on the object and mesh smoothing. Color mapping was attempted and mesh smoothing was not. As seen in figure 9 all six meshes have been aligned using meshlab. Each mesh is a different color for viewing purposes. There are some holes in the meshes partly due to the cleanup of unwanted triangles using meshlab’s “delete faces” tool. These holes can be filled with Poisson Surface Reconstruction as shown in figure 10. An interesting circumstance of this is that the PSR leaves an additional paper like mesh around the teapot. While this mesh can be trimmed with the “delete faces” tool it is a bit tedious. 
 
-![Figure 9: Final Teapot Mesh Reconstruction from Various Angles](images/figure9.png)
-
 <p align="center">
+  <img src="images/figure9.png">
   <b>Figure 9: Final Teapot Mesh Reconstruction from Various Angles</b>
 </p>
 
-![Figure 10: Teapot Mesh with and without Poisson Surface Reconstruction](images/figure10.png)
-
 <p align="center">
+  <img src="images/figure10.png">
   <b>Figure 10: Teapot Mesh with and without Poisson Surface Reconstruction</b>
 </p>
 
 There were several steps as part of the scanning pipeline in order to produce the final mesh. Once I retrieved the box and color masks from the decode() function I was able to apply those masks onto the left and right images of the object in order to mask the background as shown in figure 11. These points are what become triangulated to produce a point cloud of the object as part of the reconstruct() function shown in figure 7. An important part of creating the meshes for each set of images is to observe where to set the box limits for bounding box pruning as part of the make_mesh() function. An example of creating such meshes is in figure 8. These meshes had extraneous points that caused triangles to be created that far exceeded the threshold for triangle pruning in make_mesh() which was set at length 2 (possibly due to a code error). A workaround for this was to use the “delete faces” tool in meshlab. 
 
-![Figure 11: Masked Teapot from Left and Right Angles](images/figure11.png)
-
 <p align="center">
+  <img src="images/figure11.png">
   <b>Figure 11: Masked Teapot from Left and Right Angles</b>
 </p>
 
