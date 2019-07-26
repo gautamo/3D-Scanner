@@ -5,6 +5,6 @@ This code applies structured light scanning. In this case objects must be projec
 
 ![Format of structured light images](Structured_Light_Object_Scan.png)
 
-With that the code will produce several meshes that can be organized in MeshLab to produce the final model. MeshLab allows you to modify the meshes to clean up the final model as well. 
+The code will produce several meshes that can be organized in MeshLab to produce the final model. MeshLab allows you to modify the meshes to clean up the final model. 
 
-![6 organized meshes to produce final model]()
+![6 organized meshes to produce final model](Final_Mesh_Reconstruction.png)
