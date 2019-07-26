@@ -39,7 +39,7 @@ The intrinsic parameters of the camera are found using cv2.calibrateCamera(). Be
 
 ![Figure 3: Corners found by cv2.findChessboardCorners() visualized]()
 
-###### Extrinsic Camera parameters: calibratePose()
+### Extrinsic Camera parameters: calibratePose()
 The extrinsic parameters of the camera are found using calibratePose(pts3,pts2,cam,params_init). This function takes a grid of 3d points representing the chessboard corners as pts3, a list of chessboard corners found using cv2.findChessboardCorners()  as pts2, the camera updated with the intrinsic parameters, and an array of the initial estimate of extrinsic parameters. calibratePose() calls a multitude of functions with separate jobs. residuals(pts3,pts2,cam,t) computes the difference between the projection of 3D points by the camera
 with the given parameters and the observed 2D locations. To do this, after updating the extrinsic parameters with t, cam.project(pts3) is called which projects the given 3d points in world coordinates into the camera to produce a set of 2d coordinates as if the camera took a photo of the scene. This is done with the following code:
 
