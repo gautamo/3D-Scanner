@@ -1,3 +1,5 @@
+<c>this is centered</c>
+
 # 3D Scanner
 This is a 3D Scanner written in Python that uses images of an object to triangulate a point cloud, form a mesh, and construct a model. 
 
@@ -78,7 +80,8 @@ reconstruct(imprefix,threshold,cthreshold,camL,camR) completed the pipeline of m
 
 ![Figure 7: Triangulated point cloud of teapot created from reconstruct()]()
 
-Generate Mesh: make_mesh()
+**Generate Mesh: make_mesh()**
+
 make_mesh(path,threshold,cthreshold,boxlimits,store,camL,camR) creates a mesh using the point cloud pts3 from reconstruct(). Once the points are retrieved we apply two procedures called bounding box pruning and triangle pruning to remove extraneous points that are not part of the object. Bounding box pruning sets limits on what points are allowed within a certain volume of space. We specify boxlimits=[xmin, xmax, ymin, ymax, zmin, zmax]. Any point in pts3 not in the ranges specified in boxlimits is removed from pts3. The corresponding point is also removed from pts2L/pts2R and from the color array used for applying color to the final object mesh. Then we use the Delaunay() function from scipy.spatial to triangulate the 2D points to get the surface mesh saved as tri. This is a triangle mesh. Tri.simplices returns an array of points that constitute the corners of each triangle made. To perform triangle pruning we measure the edges of each triangle by calculating the distance between the corners of each triangle in 3D space. Any triangle with an edge larger than the specified threshold has its points removed from pts3, pts2L/pts2R, and the color array. Mesh smoothing involves averaging a set of local points to produce a smoother mesh. We will save this data (pts3,color,tri.simplices) as a .ply file with writeply() (written by Charles Folkes) to be used in meshlab to create align different meshes together. Because the color matrix must have values between 0 and 1, we will divide the color matrix by 255 before calling writeply(). An example of a created mesh can be seen in figure 8.
 
 ![Figure 8: Teapot Bottom and Side Mesh created using make_mesh()]()
