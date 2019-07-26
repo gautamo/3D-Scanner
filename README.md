@@ -1,4 +1,4 @@
-<c>this is centered</c>
+<center>this is centered</center>
 
 # 3D Scanner
 This is a 3D Scanner written in Python that uses images of an object to triangulate a point cloud, form a mesh, and construct a model. 
